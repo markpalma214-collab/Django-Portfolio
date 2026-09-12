@@ -27,9 +27,9 @@ SECRET_KEY = os.getenv("SECRET_KEY", "insecure-dev-key-change-me")
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = [
-    h.strip()
-    for h in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-    if h.strip()
+    "localhost",
+    "127.0.0.1",
+    ".vercel.app",
 ]
 
 # django-allauth needs SITE_ID to know which Site object to use for
