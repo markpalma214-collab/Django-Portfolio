@@ -9,6 +9,7 @@ dependencies = [
     "Pillow",
     "dj-database-url",
     "psycopg[binary]",
+    "requests",
 ]
 
 [tool.vercel.scripts]
