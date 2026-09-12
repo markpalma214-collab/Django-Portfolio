@@ -1,2 +1,15 @@
+[project]
+name = "django-portfolio"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "Django",
+    "django-allauth",
+    "python-dotenv",
+    "Pillow",
+    "dj-database-url",
+    "psycopg[binary]",
+]
+
 [tool.vercel.scripts]
 build = "python manage.py migrate --noinput"
