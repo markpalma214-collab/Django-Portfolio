@@ -1,0 +1,201 @@
+{% extends "main/base.html" %}
+{% load static socialaccount main_extras %}
+
+{% block title %}{{ profile.name|default:"Portfolio" }} — Developer Portfolio{% endblock %}
+
+{% block content %}
+
+<!-- ============ PAGE 1 — HOME ============ -->
+<section id="home" class="section section-home">
+    <div class="noren-accent"></div>
+    <div class="section-inner home-inner">
+        <div class="home-image">
+            {% if profile.profile_image %}
+                <img src="{{ profile.profile_image.url }}" alt="{{ profile.name }}">
+            {% else %}
+                <div class="home-image-placeholder">写真</div>
+            {% endif %}
+            <div class="neon-ring"></div>
+        </div>
+
+        <div class="home-text">
+            <p class="eyebrow">よこそ &mdash; Welcome</p>
+            <h1 class="home-name">{{ profile.name|default:"Your Name" }}</h1>
+            <p class="home-tagline">{{ profile.tagline|default:"Software Developer" }}</p>
+            <p class="home-about">{{ profile.about|default:"Add your About Me text from the Django admin panel." }}</p>
+
+            <div class="home-links">
+                {% if profile.github_url %}
+                    <a href="{{ profile.github_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline">GitHub</a>
+                {% endif %}
+                {% if profile.linkedin_url %}
+                    <a href="{{ profile.linkedin_url }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline">LinkedIn</a>
+                {% endif %}
+                <a href="#projects" class="btn btn-neon">View Projects</a>
+            </div>
+        </div>
+    </div>
+    <a href="#about" class="scroll-cue" aria-label="Scroll down">↓</a>
+</section>
+
+<!-- ============ PAGE 2 — ABOUT / SKILLS / HOBBIES ============ -->
+<section id="about" class="section section-about">
+    <div class="section-inner">
+        <p class="eyebrow">自己紹介 &mdash; About</p>
+        <h2 class="section-title">Skills &amp; Background</h2>
+
+        <div class="about-grid">
+            <div class="about-card">
+                <h3 class="about-card-title">Skills</h3>
+                <div class="pill-list">
+                    {% for skill in skills %}
+                        <span class="pill">{% if skill.icon %}{{ skill.icon }} {% endif %}{{ skill.name }}</span>
+                    {% empty %}
+                        <p class="empty-hint">Add skills from /admin/.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="about-card">
+                <h3 class="about-card-title">Hobbies</h3>
+                <ul class="simple-list">
+                    {% for hobby in hobbies %}
+                        <li><strong>{{ hobby.name }}</strong>{% if hobby.description %} — {{ hobby.description }}{% endif %}</li>
+                    {% empty %}
+                        <p class="empty-hint">Add hobbies from /admin/.</p>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="about-card about-card-wide">
+                <h3 class="about-card-title">Personal Info</h3>
+                <dl class="info-grid">
+                    {% for info in personal_info %}
+                        <div class="info-item">
+                            <dt>{{ info.label }}</dt>
+                            <dd>{{ info.value }}</dd>
+                        </div>
+                    {% empty %}
+                        <p class="empty-hint">Add personal info entries from /admin/.</p>
+                    {% endfor %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ============ PAGE 3 — PROJECTS ============ -->
+<section id="projects" class="section section-projects">
+    <div class="section-inner">
+        <p class="eyebrow">作品 &mdash; Work</p>
+        <h2 class="section-title">Projects</h2>
+
+        <div class="project-grid">
+            {% for project in projects %}
+                <a class="project-card" href="{{ project.github_url }}" target="_blank" rel="noopener noreferrer">
+                    <div class="project-thumb">
+                        {% if project.thumbnail %}
+                            <img src="{{ project.thumbnail.url }}" alt="{{ project.title }}">
+                        {% else %}
+                            <div class="project-thumb-placeholder">{{ project.title|slice:":1" }}</div>
+                        {% endif %}
+                        <div class="project-overlay">View on GitHub →</div>
+                    </div>
+                    <div class="project-body">
+                        <h3>{{ project.title }}</h3>
+                        <p>{{ project.description }}</p>
+                        {% if project.tech_list %}
+                        <div class="tech-tags">
+                            {% for tech in project.tech_list %}
+                                <span class="tech-tag">{{ tech }}</span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </a>
+            {% empty %}
+                <p class="empty-hint">Add projects from /admin/.</p>
+            {% endfor %}
+        </div>
+
+        <div class="signin-callout">
+            {% if not user.is_authenticated %}
+                <p>Sign in to leave a review below.</p>
+                <a href="{% provider_login_url 'google' %}" class="btn btn-neon">Sign in with Google</a>
+            {% else %}
+                <p>Signed in as {{ user.first_name|default:user.email }}. <a href="{% url 'account_logout' %}">Sign out</a></p>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+<!-- ============ PAGE 4 — REVIEWS + SOCIALS ============ -->
+<section id="reviews" class="section section-reviews">
+    <div class="section-inner">
+        <p class="eyebrow">口コミ &mdash; Reviews</p>
+        <h2 class="section-title">What people say</h2>
+
+        {% if user.is_authenticated %}
+            {% if review_form %}
+                <form class="review-form" method="post" action="{% url 'main:submit_review' %}">
+                    {% csrf_token %}
+                    {{ review_form.message }}
+                    <button type="submit" class="btn btn-neon">Post Review</button>
+                </form>
+            {% elif user_review %}
+                <p class="empty-hint">You've already posted a review — thank you!</p>
+            {% endif %}
+        {% else %}
+            <div class="signin-callout">
+                <p>Sign in with Google to leave your own review.</p>
+                <a href="{% provider_login_url 'google' %}" class="btn btn-neon">Sign in with Google</a>
+            </div>
+        {% endif %}
+
+        <div class="review-grid">
+            {% for review in reviews %}
+                {% with avatar=review.user|google_avatar %}
+                <div class="review-card" data-review-id="{{ review.id }}">
+                    <div class="review-header">
+                        {% if avatar %}
+                            <img src="{{ avatar }}" alt="{{ review.user.first_name }}" class="review-avatar">
+                        {% else %}
+                            <div class="review-avatar review-avatar-placeholder">{{ review.user.first_name|slice:":1"|upper }}</div>
+                        {% endif %}
+                        <div>
+                            <p class="review-name">{{ review.user.first_name }} {{ review.user.last_name }}</p>
+                            <p class="review-email">{{ review.user.email }}</p>
+                        </div>
+                    </div>
+                    <p class="review-message">{{ review.message }}</p>
+                    <div class="review-footer">
+                        <span class="review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                        <button
+                            class="like-btn {% if review.liked_by_user %}liked{% endif %}"
+                            data-review-id="{{ review.id }}"
+                            {% if not user.is_authenticated %}disabled title="Sign in to like reviews"{% endif %}>
+                            <span class="like-icon">♥</span>
+                            <span class="like-count">{{ review.like_count }}</span>
+                        </button>
+                    </div>
+                </div>
+                {% endwith %}
+            {% empty %}
+                <p class="empty-hint">No reviews yet — be the first to sign in and leave one.</p>
+            {% endfor %}
+        </div>
+
+        <div class="social-section">
+            <h3 class="about-card-title">Find me elsewhere</h3>
+            <div class="social-links">
+                {% for social in socials %}
+                    <a href="{{ social.url }}" target="_blank" rel="noopener noreferrer" class="social-link">{{ social.get_platform_display }}</a>
+                {% empty %}
+                    <p class="empty-hint">Add social links from /admin/.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
