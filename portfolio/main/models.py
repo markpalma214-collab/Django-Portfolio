@@ -100,7 +100,8 @@ class SocialLink(models.Model):
         FACEBOOK = "facebook", "Facebook"
         INSTAGRAM = "instagram", "Instagram"
         DISCORD = "discord", "Discord"
-        REDDIT = "reddit, "Reddit"
+        YOUTUBE = "youtube", "YouTube"
+        REDDIT = "reddit", "Reddit"
         OTHER = "other", "Other"
 
     platform = models.CharField(max_length=20, choices=Platform.choices)
